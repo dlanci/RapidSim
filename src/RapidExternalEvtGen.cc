@@ -124,7 +124,7 @@ bool RapidExternalEvtGen::setupGenerator() {
 	std::list<EvtDecayBase*> extraModels;
 
 	// Define the random number generator
-	uint seed = gRandom->GetSeed();
+	uint seed = gRandom->TRandom::GetSeed();
 	randomEngine = new EvtMTRandomEngine(seed);
 
 	bool useEvtGenRandom(false);

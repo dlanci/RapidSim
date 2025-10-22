@@ -297,7 +297,7 @@ bool RapidConfig::loadDecay() {
 bool RapidConfig::loadConfig() {
 	std::cout << "INFO in RapidConfig::loadConfig : attempting to load configuration from file: " << fileName_+".config" << std::endl;
 
-	gRandom->SetSeed(0.);
+	gRandom->TRandom::SetSeed(0.);
 
 	std::ifstream fin;
 	fin.open(fileName_+".config", std::ifstream::in);
@@ -447,9 +447,9 @@ bool RapidConfig::configParticle(unsigned int part, TString command, TString val
 bool RapidConfig::configGlobal(TString command, TString value) {
 	if(command=="seed") {
 		int seed = value.Atoi();
-		gRandom->SetSeed(seed);
+		gRandom->TRandom::SetSeed(seed);
 		std::cout << "INFO in RapidConfig::configGlobal : setting seed for random number generation to " << seed << "." << std::endl
-			  << "                                    seed is now " << gRandom->GetSeed() << "." << std::endl;
+			  << "                                    seed is now " << gRandom->TRandom::GetSeed() << "." << std::endl;
 	} else if(command=="acceptance") {
 		std::cout << "INFO in RapidConfig::configGlobal : setting acceptance type to " << value << "." << std::endl;
 		acceptanceType_ = RapidAcceptance::typeFromString(value);
