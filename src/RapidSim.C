@@ -21,6 +21,16 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 		return 1;
 	}
 
+	if(nEvtToGen==0) {
+		std::cout << "ERROR in RapidSim : nEvtToGenerate cannot be 0" << std::endl
+			  << "                     Terminating" << std::endl;	
+		return 1;
+	} else if (nEvtToGen<0) {
+		std::cout << "ERROR in RapidSim : nEvtToGenerate cannot be negative (" << nEvtToGen << ")" << std::endl
+			  << "                     Terminating" << std::endl;	
+		return 1;
+	}
+
 	std::cout << "INFO in RapidSim : nEvtToGenerate set to " << nEvtToGen << std::endl;
 	
 	if(nEvtToSelect==-1) {
@@ -31,6 +41,14 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 		std::cout << "ERROR in RapidSim : nEvtToSelect (" << nEvtToSelect << ") is larger than nEvtToGenerate (" << nEvtToGen << ")" << std::endl
 			  << "                     If you want to select as many events as possible, set nEvtToSelect to -1" << std::endl
 			  << "                     Terminating" << std::endl;
+		return 1;
+	} else if (nEvtToSelect < 0) {
+		std::cout << "ERROR in RapidSim : nEvtToSelect set to negative value other than -1 (" << nEvtToSelect << ")" << std::endl
+			  << "                     Terminating" << std::endl;
+		return 1;
+	} else if (nEvtToSelect==0) {
+		std::cout << "ERROR in RapidSim : nEvtToSelect cannot be 0" << std::endl
+			  << "                     Terminating" << std::endl;	
 		return 1;
 	} else {
 		std::cout << "INFO in RapidSim : nEvtToSelect set to " << nEvtToSelect << std::endl;

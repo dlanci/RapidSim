@@ -38,19 +38,20 @@ $ # Setup the RAPIDSIM_ROOT environment variable (or add to .bashrc)
 $ export RAPIDSIM_ROOT=<install location>
 $ # Optionally setup the RAPIDSIM_CONFIG environment variable
 $ export RAPIDSIM_CONFIG=/path/to/additional/configuration/files
-$ $RAPIDSIM_ROOT/build/src/RapidSim.exe <decay mode> <events to generate> <save tree?> <num times to re-decay each hadron>
+$ $RAPIDSIM_ROOT/build/src/RapidSim.exe <decay mode> <events to generate> <max events to save=-1> <save tree?> <num times to re-decay each hadron>
 ```
+If the max event to save/select is specified and >0, the generation will be stopped early if this number is reached.
 
 To run an example try:
 
 ```shell
-$ $RAPIDSIM_ROOT/build/src/RapidSim.exe $RAPIDSIM_ROOT/validation/Bs2Jpsiphi 10000 1
+$ $RAPIDSIM_ROOT/build/src/RapidSim.exe $RAPIDSIM_ROOT/validation/Bs2Jpsiphi 10000 -1 1
 ```
 
 or
 
 ```shell
-$ $RAPIDSIM_ROOT/bin/RapidSim.exe $RAPIDSIM_ROOT/validation/Bs2Jpsiphi 10000 1
+$ $RAPIDSIM_ROOT/bin/RapidSim.exe $RAPIDSIM_ROOT/validation/Bs2Jpsiphi 10000 -1 1
 ```
 
 To run the full system validation:
