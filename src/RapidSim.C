@@ -9,7 +9,7 @@
 #include "RapidDecay.h"
 #include "RapidHistWriter.h"
 
-int rapidSim(const TString mode, const int nEvtToGen, bool saveTree=false, int nToReDecay=0) {
+int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1, bool saveTree=false, int nToReDecay=0) {
 
 	clock_t t0,t1,t2;
 
@@ -19,6 +19,21 @@ int rapidSim(const TString mode, const int nEvtToGen, bool saveTree=false, int n
 		std::cout << "ERROR in rapidSim : environment variable RAPIDSIM_ROOT is not set" << std::endl
 			  << "                    Terminating" << std::endl;
 		return 1;
+	}
+
+	std::cout << "INFO in RapidSim : nEvtToGenerate set to " << nEvtToGen << std::endl;
+	
+	if(nEvtToSelect==-1) {
+		std::cout << "INFO in RapidSim : nEvtToSelect set to -1 --> will select all possible events" << std::endl
+			  << "                   Specify nEvtToSelect if you want to limit the number of selected events" << std::endl;
+		nEvtToSelect = nEvtToGen;
+	} else if (nEvtToSelect>nEvtToGen) {
+		std::cout << "ERROR in RapidSim : nEvtToSelect (" << nEvtToSelect << ") is larger than nEvtToGenerate (" << nEvtToGen << ")" << std::endl
+			  << "                     If you want to select as many events as possible, set nEvtToSelect to -1" << std::endl
+			  << "                     Terminating" << std::endl;
+		return 1;
+	} else {
+		std::cout << "INFO in RapidSim : nEvtToSelect set to " << nEvtToSelect << std::endl;
 	}
 
 	TString configEnv=getenv("RAPIDSIM_CONFIG");
@@ -53,6 +68,7 @@ int rapidSim(const TString mode, const int nEvtToGen, bool saveTree=false, int n
 	t1=clock();
 
 	int ngenerated = 0; int nselected = 0;
+	bool stopGeneration = false;
 	for (Int_t n=0; n<nEvtToGen; ++n) {
 		writer->setNEvent(n);
 		if (!decay->generate()) continue;
@@ -61,7 +77,12 @@ int rapidSim(const TString mode, const int nEvtToGen, bool saveTree=false, int n
 		if(acceptance->isSelected()) {
 			++nselected;
 			writer->fill();
+			if (nselected>=nEvtToSelect) {
+				std::cout << "INFO in rapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
+				stopGeneration = true;
+			}
 		}
+		if (stopGeneration) break;
 
 		for (Int_t nrd=0; nrd<nToReDecay; ++nrd) {
 			if (!decay->generate(false)) continue;
@@ -71,7 +92,17 @@ int rapidSim(const TString mode, const int nEvtToGen, bool saveTree=false, int n
 			++nselected;
 
 			writer->fill();
+			if (nselected>=nEvtToSelect) {
+				std::cout << "INFO in rapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
+				stopGeneration = true;
+			}
+			if (stopGeneration) break;
 		}
+		if (stopGeneration) break;
+	}
+	if (nselected < nEvtToSelect && nEvtToSelect != -1) {
+		std::cout << "WARNING in rapidSim : Only selected " << nselected << " events out of requested " << nEvtToSelect << std::endl;
+		std::cout << "                     Consider increasing nEvtToGenerate" << std::endl;
 	}
 
 	writer->save();
@@ -89,23 +120,27 @@ int rapidSim(const TString mode, const int nEvtToGen, bool saveTree=false, int n
 int main(int argc, char * argv[])
 {
 	if (argc < 3) {
-		printf("Usage: %s mode numberToGenerate [saveTree=0] [numberToRedecay=0]\n", argv[0]);
+		printf("Usage: %s mode numberToGenerate [numberToSelect=-1 (select all possible events)] [saveTree=0] [numberToRedecay=0]\n", argv[0]);
 		return 1;
 	}
 
 	const TString mode = argv[1];
-	const int number = static_cast<int>(atof(argv[2]));
+	const int numberToGenerate = static_cast<int>(atoll(argv[2]));
+	signed int numberToSelect = numberToGenerate;
 	bool saveTree = false;
 	int nToReDecay = 0;
 
 	if(argc>3) {
-		saveTree = atoi(argv[3]);
+		numberToSelect = static_cast<signed int>(atoll(argv[3]));
 	}
 	if(argc>4) {
-		nToReDecay = atoi(argv[4]);
+		saveTree = atoi(argv[4]);
+	}
+	if(argc>5) {
+		nToReDecay = atoi(argv[5]);
 	}
 
-	int status = rapidSim(mode, number, saveTree, nToReDecay);
+	int status = rapidSim(mode, numberToGenerate, numberToSelect, saveTree, nToReDecay);
 
 	return status;
 }
