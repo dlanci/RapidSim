@@ -145,7 +145,7 @@ int main(int argc, char * argv[])
 
 	const TString mode = argv[1];
 	const int numberToGenerate = static_cast<int>(atoll(argv[2]));
-	signed int numberToSelect = numberToGenerate;
+	signed int numberToSelect = -1;
 	bool saveTree = false;
 	int nToReDecay = 0;
 
