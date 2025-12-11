@@ -16,7 +16,7 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 	t0=clock();
 
 	if(!getenv("RAPIDSIM_ROOT")) {
-		std::cout << "ERROR in rapidSim : environment variable RAPIDSIM_ROOT is not set" << std::endl
+		std::cout << "ERROR in RapidSim : environment variable RAPIDSIM_ROOT is not set" << std::endl
 			  << "                    Terminating" << std::endl;
 		return 1;
 	}
@@ -51,31 +51,32 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 			  << "                     Terminating" << std::endl;	
 		return 1;
 	} else {
-		std::cout << "INFO in RapidSim : nEvtToSelect set to " << nEvtToSelect << std::endl;
+		std::cout << "INFO in RapidSim : nEvtToSelect set to " << nEvtToSelect 
+				  << " --> will stop event loop early if this number is reached" << std::endl;
 	}
 
 	TString configEnv=getenv("RAPIDSIM_CONFIG");
 	if(configEnv!="") {
-		std::cout << "INFO in rapidSim : environment variable RAPIDSIM_CONFIG is set" << std::endl
+		std::cout << "INFO in RapidSim : environment variable RAPIDSIM_CONFIG is set" << std::endl
 			  << "                   Settings in " << configEnv << " will be used" << std::endl;
 	}
 
 	RapidConfig config;
 	if(!config.load(mode)) {
-		std::cout << "ERROR in rapidSim : failed to load configuration for decay mode " << mode << std::endl
+		std::cout << "ERROR in RapidSim : failed to load configuration for decay mode " << mode << std::endl
 			  << "                    Terminating" << std::endl;
 		return 1;
 	}
 
 	RapidDecay* decay = config.getDecay();
 	if(!decay) {
-		std::cout << "ERROR in rapidSim : failed to setup decay for decay mode " << mode << std::endl
+		std::cout << "ERROR in RapidSim : failed to setup decay for decay mode " << mode << std::endl
 			  << "                    Terminating" << std::endl;
 		return 1;
 	}
 
 	if(nToReDecay>0) {
-		std::cout << "INFO in rapidSim : re-decay mode is active" << std::endl
+		std::cout << "INFO in RapidSim : re-decay mode is active" << std::endl
 			  << "                   Each parent will be re-decayed " << nToReDecay << " times" << std::endl;
 	}
 
@@ -96,7 +97,7 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 			++nselected;
 			writer->fill();
 			if (nselected>=nEvtToSelect) {
-				std::cout << "INFO in rapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
+				std::cout << "INFO in RapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
 				stopGeneration = true;
 			}
 		}
@@ -111,26 +112,26 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 
 			writer->fill();
 			if (nselected>=nEvtToSelect) {
-				std::cout << "INFO in rapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
+				std::cout << "INFO in RapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
 				stopGeneration = true;
 			}
 			if (stopGeneration) break;
 		}
 		if (stopGeneration) break;
 	}
-	if (nselected < nEvtToSelect && nEvtToSelect != -1) {
-		std::cout << "WARNING in rapidSim : Only selected " << nselected << " events out of requested " << nEvtToSelect << std::endl;
-		std::cout << "                     Consider increasing nEvtToGenerate" << std::endl;
-	}
-
+	
 	writer->save();
-
+	
 	t2=clock();
-
-	std::cout << "INFO in rapidSim : Generated " << ngenerated << std::endl;
-	std::cout << "INFO in rapidSim : Selected " << nselected << std::endl;
-	std::cout << "INFO in rapidSim : " << (float(t1) - float(t0)) / CLOCKS_PER_SEC << " seconds to initialise." << std::endl;
-	std::cout << "INFO in rapidSim : " << (float(t2) - float(t1)) / CLOCKS_PER_SEC << " seconds to generate." << std::endl;
+	
+	std::cout << "INFO in RapidSim : Generated " << ngenerated << std::endl;
+	std::cout << "INFO in RapidSim : Selected " << nselected << std::endl;
+	if (nselected < nEvtToSelect && nEvtToSelect != -1) {
+		std::cout << "WARNING in RapidSim : Only selected " << nselected << " events out of requested " << nEvtToSelect << std::endl;
+		std::cout << "                      Consider increasing nEvtToGenerate" << std::endl;
+	}
+	std::cout << "INFO in RapidSim : " << (float(t1) - float(t0)) / CLOCKS_PER_SEC << " seconds to initialise." << std::endl;
+	std::cout << "INFO in RapidSim : " << (float(t2) - float(t1)) / CLOCKS_PER_SEC << " seconds to generate." << std::endl;
 
 	return 0;
 }
@@ -138,7 +139,7 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 int main(int argc, char * argv[])
 {
 	if (argc < 3) {
-		printf("Usage: %s mode numberToGenerate [numberToSelect=-1 (select all possible events)] [saveTree=0] [numberToRedecay=0]\n", argv[0]);
+		printf("Usage: %s mode numberToGenerate [saveTree=0] [numberToRedecay=0] [numberToSelect=-1 (select all possible events)]\n", argv[0]);
 		return 1;
 	}
 
@@ -149,15 +150,15 @@ int main(int argc, char * argv[])
 	int nToReDecay = 0;
 
 	if(argc>3) {
-		numberToSelect = static_cast<signed int>(atoll(argv[3]));
+		saveTree = atoi(argv[3]);
 	}
 	if(argc>4) {
-		saveTree = atoi(argv[4]);
+		nToReDecay = atoi(argv[4]);
 	}
 	if(argc>5) {
-		nToReDecay = atoi(argv[5]);
+		numberToSelect = static_cast<signed int>(atoll(argv[5]));
 	}
-
+	
 	int status = rapidSim(mode, numberToGenerate, numberToSelect, saveTree, nToReDecay);
 
 	return status;
