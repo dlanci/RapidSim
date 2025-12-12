@@ -36,7 +36,6 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 	if(nEvtToSelect==-1) {
 		std::cout << "INFO in RapidSim : nEvtToSelect set to -1 --> will select all possible events" << std::endl
 			  << "                   Specify nEvtToSelect if you want to limit the number of selected events" << std::endl;
-		nEvtToSelect = nEvtToGen;
 	} else if (nEvtToSelect>nEvtToGen) {
 		std::cout << "ERROR in RapidSim : nEvtToSelect (" << nEvtToSelect << ") is larger than nEvtToGenerate (" << nEvtToGen << ")" << std::endl
 			  << "                     If you want to select as many events as possible, set nEvtToSelect to -1" << std::endl
@@ -96,7 +95,7 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 		if(acceptance->isSelected()) {
 			++nselected;
 			writer->fill();
-			if (nselected>=nEvtToSelect) {
+			if (nselected>=nEvtToSelect && nEvtToSelect != -1) {
 				std::cout << "INFO in RapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
 				stopGeneration = true;
 			}
@@ -111,7 +110,7 @@ int rapidSim(const TString mode, const int nEvtToGen, signed int nEvtToSelect=-1
 			++nselected;
 
 			writer->fill();
-			if (nselected>=nEvtToSelect) {
+			if (nselected>=nEvtToSelect && nEvtToSelect != -1) {
 				std::cout << "INFO in RapidSim : Selected " << nselected << " events. Stopping generation early." << std::endl;
 				stopGeneration = true;
 			}
