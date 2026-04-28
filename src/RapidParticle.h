@@ -55,6 +55,8 @@ class RapidParticle {
 		double charge() { return charge_; }
 		double minMass() { return minMass_; }
 		double maxMass() { return maxMass_; }
+		double t() {return t_; }
+		bool hasOsc() {return hasOsc_;}
 
 		RapidVertex * getOriginVertex() {return originVertex_;}
 		RapidVertex * getDecayVertex() {return decayVertex_;}
@@ -92,7 +94,9 @@ class RapidParticle {
 		void setMinIPSigma(double sigma) { sigmaminip_ = sigma; }
 		//
 		void setPtEtaPhi(double pt, double eta, double phi) { p_.SetPtEtaPhiM(pt,eta,phi,mass_); }
-
+		void setDecaytime(double t) { t_ = t; }
+		void setHasOsc(bool hasOsc) { hasOsc_ = hasOsc; }
+		void setId(int id) { id_ = id; }
 		void print(int index);
 
 		void setMassShape(RooDataSet* ds, double minMass, double maxMass, TString varName);
@@ -131,6 +135,8 @@ class RapidParticle {
 		double sigmaminip_;
 		double ipSmeared_;
 		double minipSmeared_;
+		double t_;
+		bool hasOsc_;
 		TLorentzVector p_;
 		TLorentzVector pSmeared_;
 

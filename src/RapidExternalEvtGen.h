@@ -4,6 +4,8 @@
 #include "TString.h"
 
 #include "RapidExternalGenerator.h"
+#include "EvtGenBase/EvtParticle.hh"
+#include "EvtGenBase/EvtHepMCEvent.hh"
 
 #ifdef RAPID_EVTGEN
 class EvtGen;
@@ -28,6 +30,9 @@ class RapidExternalEvtGen : public RapidExternalGenerator {
 		static TString getEvtGenConjName(int id);
 
 	private:
+    	bool isB0Mixed( EvtParticle* p );
+    	bool isBsMixed( EvtParticle* p );
+		double calcFlightTime( FourVector& BDecayVtx, FourVector& B4mtm );
 #ifdef RAPID_EVTGEN
 		EvtGen* evtGen_;
 #else
