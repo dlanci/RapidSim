@@ -13,7 +13,6 @@ double RapidParam::eval() {
 	if(type_ == RapidParam::ProbNNmu || type_ == RapidParam::ProbNNpi || type_ == RapidParam::ProbNNe ||
 	   type_ == RapidParam::ProbNNk || type_ == RapidParam::ProbNNp) return evalPID();
 	if(type_ >= RapidParam::VtxX && type_ <= RapidParam::OrigZ) return evalPos();
-	// if(type_ >= RapidParam::ID && type_ <= RapidParam::ID) return evalID();
 
 	double fd      = particles_[0]->getFD(truth_);
 	double ip      = particles_[0]->getIP();
