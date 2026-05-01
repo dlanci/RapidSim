@@ -104,16 +104,31 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 			auto outParticle = theVertex->particles_out()[0];
 			int inPDGId = inParticle->pdg_id();
 			int PDGId = outParticle->pdg_id();
-
+			// std::cout<<""<<std::endl;
+			// std::cout<<"In nin==1 and nout==1"<<std::endl;
+			// std::cout<<""<<std::endl;
 			if ( inPDGId == B0Id || inPDGId == BsId || inPDGId == B0barId || inPDGId == BsbarId ) {
 
 
 				// std::cout<<"inPDGId"<<inPDGId<<std::endl;
 				// std::cout<<"PDGId"<<PDGId<<std::endl;
-
-				hasOsc=false;
-				if (PDGId!=inPDGId){hasOsc=true;}
-				parts[0]->setHasOsc(hasOsc);
+				
+				if (PDGId!=inPDGId){
+					hasOsc=true;
+					// std::cout<<""<<std::endl;
+					// std::cout<<" HAS OSCILLATED "<<std::endl;
+					// std::cout<<" inPDGId: "<<inPDGId<<std::endl;
+					// std::cout<<" PDGId: "<<PDGId<<std::endl;
+					// std::cout<<""<<std::endl;
+				}
+				else{
+					hasOsc=false;
+					// std::cout<<""<<std::endl;
+					// std::cout<<" HASN'T OSCILLATED "<<std::endl;
+					// std::cout<<" inPDGId: "<<inPDGId<<std::endl;
+					// std::cout<<" PDGId: "<<PDGId<<std::endl;
+					// std::cout<<""<<std::endl;
+				}
 				
         	
 			}
@@ -140,11 +155,30 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 			parts[iVtx]->getDecayVertex()->setXYZ(DecayVtx.x(), DecayVtx.y(), DecayVtx.x());
 			
 			int inPDGId = inParticle->pdg_id();
+			// std::cout<<""<<std::endl;
+			// std::cout<<"In nin==1 and nout>1"<<std::endl;
+			// std::cout<<""<<std::endl;			
 			if(iVtx==0){
         		if ( inPDGId == B0Id || inPDGId == BsId || inPDGId == B0barId || inPDGId == BsbarId ) {
 
-					hasOsc=false;
-					if (PDGId!=inPDGId){hasOsc=true;}
+					
+					if (PDGId!=inPDGId){
+						hasOsc=true;
+						// std::cout<<""<<std::endl;
+						// std::cout<<" HAS OSCILLATED "<<std::endl;
+						// std::cout<<" inPDGId: "<<inPDGId<<std::endl;
+						// std::cout<<" PDGId: "<<PDGId<<std::endl;
+						// std::cout<<""<<std::endl;
+					}
+					else{
+						hasOsc=false;
+						// std::cout<<""<<std::endl;
+						// std::cout<<" HASN'T OSCILLATED "<<std::endl;
+						// std::cout<<" inPDGId: "<<inPDGId<<std::endl;
+						// std::cout<<" PDGId: "<<PDGId<<std::endl;
+						// std::cout<<""<<std::endl;
+					}
+
 					parts[iVtx]->setHasOsc(hasOsc);
         		}
 			}
