@@ -17,7 +17,7 @@ class RapidIPSmear;
 class RapidParticle {
 	public:
 		RapidParticle(int id, TString name, double mass, double charge, double ctau, RapidParticle* mother)
-			: index_(0), id_(id), name_(name), mass_(mass), charge_(charge), ctau_(ctau),
+			: index_(0), id_(id), prodId_(id), name_(name), mass_(mass), charge_(charge), ctau_(ctau),
 			  mother_(mother), next_(0), invisible_(false), momSmear_(0), ipSmear_(0),
 			  massData_(0), minMass_(mass), maxMass_(mass),
 			  evtGenModel_("PHSP"),
@@ -48,6 +48,7 @@ class RapidParticle {
 		double getFD(bool truth);
 
 		int id() { return id_; }
+		int prodId() { return prodId_; }
 		TString name() { return name_; }
 		double mass() { return mass_; }
 		double deltaMass();
@@ -97,6 +98,7 @@ class RapidParticle {
 		void setDecaytime(double t) { t_ = t; }
 		void setHasOsc(bool hasOsc) { hasOsc_ = hasOsc; }
 		void setId(int id) { id_ = id; }
+		void setProdId(int id) { prodId_ = id; }
 		void print(int index);
 
 		void setMassShape(RooDataSet* ds, double minMass, double maxMass, TString varName);
@@ -121,6 +123,7 @@ class RapidParticle {
 		unsigned int index_;
 
 		int id_;
+		int prodId_;
 		TString name_;
 		double mass_;
 		double charge_;

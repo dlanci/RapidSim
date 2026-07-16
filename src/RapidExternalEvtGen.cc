@@ -39,10 +39,9 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 
 	EvtSpinDensity* spinDensity = 0;
 	TString parentName = getEvtGenName(parts[0]->id());
-	EvtId theId = EvtPDL::evtIdFromLundKC(parts[0]->id());
+	static EvtId theId = EvtPDL::evtIdFromLundKC(parts[0]->id());
 
 	int PDGId = EvtPDL::getStdHep( theId );
-	// std::cout<<"PDGId here:   "<<PDGId<<std::endl;
     if ( theId.getId() == -1 && theId.getAlias() == -1 ) {
         std::cout << "Error. Could not find valid EvtId for " << parentName << std::endl;
         return -1;
@@ -80,9 +79,6 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 	
 	double flightTime;
 
-	int iVtx(0);
-	int iPart(1);
-	bool hasOsc(false);
 
 	TLorentzVector p4TLV;
 	FourVector FourMom;
@@ -92,24 +88,52 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 	std::queue<int> nExpectedChildren;
 	nExpectedChildren.push(parts[0]->nDaughters());
 
-	for ( auto theVertex : hepMCEvent->vertices() ) {
-		if ( theVertex == 0 ) {
+	// count the number of vertices with exactly 1 in and 1 out,
+	// these correspond to oscillation vertices
+	int nOscVtx(0);
+	int nTotVtx(0);
+	for ( auto theVertexCount : hepMCEvent->vertices() ) {
+		if ( theVertexCount == 0 ) {
 		    continue;
 		}
-		auto nin  = theVertex->particles_in_size();
-		auto nout = theVertex->particles_out_size();
-
-		while (nin == 1 && nout ==1){
-			//B meson oscillation
-			continue;
+		auto nin  = theVertexCount->particles_in_size();
+		auto nout = theVertexCount->particles_out_size();
+		if (nin == 1 && nout == 1){
+			++nOscVtx;
 		}
+		++nTotVtx;
+	}
+	// std::cout<<"Start RapidSim"<<"\n"<<std::endl;
+	// std::cout<<""<<std::endl;
+	// std::cout<<"A total of "<<nOscVtx<<" oscillation vertices over a total of "<<nTotVtx<<" vertices were found."<<std::endl;
+	// std::cout<<""<<std::endl;
 
-		uint nChildren = nExpectedChildren.front();
 
-		// For these, get the mother decay vertex position and the 4-momentum to calculate
-		// the flight time.
+	int iVtx(0);
+	int iPart(1);
+	// int hasOsc(0);
 
-		for ( auto inParticle : theVertex->particles_in() ) {
+	if (nOscVtx == 0){
+		
+		for ( auto theVertex : hepMCEvent->vertices() ) {
+
+			if ( theVertex == 0 ) {
+			    continue;
+			}
+			// auto nin  = theVertex->particles_in_size();
+			auto nout = theVertex->particles_out_size();
+			
+			if (nout == 1){
+				std::cout << "" << std::endl;
+				std::cout << "WARNING in RapidExternalEvtGen::decay was expecting a non oscillated output at vtx 0" << std::endl;
+				std::cout << "nout: "<<nout << std::endl;
+				std::cout << "" << std::endl;
+				return false;
+			}
+
+			uint nChildren = nExpectedChildren.front();
+
+			for ( auto inParticle : theVertex->particles_in() ) {
 
         		if ( inParticle == 0 ) {
         	    	continue;
@@ -118,64 +142,158 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 				int inPDGId = inParticle->pdg_id();
 				FourMom = inParticle->momentum();
 				DecayVtx = theVertex->position();
-
-				if ( inPDGId == B0Id || inPDGId == BsId || inPDGId == B0barId || inPDGId == BsbarId ) {
-
-					if (PDGId!=inPDGId){
-						hasOsc=true;
-					}
-					else{
-						hasOsc=false;
-
-					}
-
-					parts[iVtx]->setHasOsc(hasOsc);
-					
-				}				
-
 				flightTime = calcFlightTime( DecayVtx, FourMom );
+
+				parts[iVtx]->setHasOsc(0);
+
 				parts[iVtx]->setId(inPDGId);
+				parts[iVtx]->setProdId(inPDGId);
+
 				parts[iVtx]->setDecaytime(flightTime);
 				parts[iVtx]->getDecayVertex()->setXYZ(DecayVtx.x(), DecayVtx.y(), DecayVtx.x());
-							
-		}  
-
-		uint nRecorded(0);
-		for ( auto outParticle : theVertex->particles_out() ) {
 			
-			if (nRecorded < nChildren) {
+			}
+			
+			uint nRecorded(0);
+			for ( auto outParticle : theVertex->particles_out() ) {
 
-				FourMom = outParticle->momentum();
-				OrigVtx = theVertex->position();
+				if (nRecorded < nChildren) {
 
-				p4TLV.SetPxPyPzE(FourMom.px(),FourMom.py(),FourMom.pz(),FourMom.e());
+					FourMom = outParticle->momentum();
+					OrigVtx = theVertex->position();
 
-				std::cout<<"ID:"<<outParticle->pdg_id()<<std::endl;
-				std::cout<<"px: "<<FourMom.px()<<std::endl;
-				std::cout<<"py: "<<FourMom.py()<<std::endl;
-				std::cout<<"pz: "<<FourMom.pz()<<std::endl;
-				std::cout<<""<<std::endl;
+					p4TLV.SetPxPyPzE(FourMom.px(),FourMom.py(),FourMom.pz(),FourMom.e());
 
-				parts[iPart]->setP(p4TLV);
+					// std::cout<<"ID:"<<outParticle->pdg_id()<<std::endl;
+					// std::cout<<"px: "<<FourMom.px()<<std::endl;
+					// std::cout<<"py: "<<FourMom.py()<<std::endl;
+					// std::cout<<"pz: "<<FourMom.pz()<<std::endl;
+					// std::cout<<""<<std::endl;
 
-				parts[iPart]->getOriginVertex()->setXYZ(OrigVtx.x(),OrigVtx.y(),OrigVtx.z());
-				parts[iPart]->setId(outParticle->pdg_id());
+					parts[iPart]->setP(p4TLV);
 
-				nExpectedChildren.push(parts[iPart]->nDaughters());
+					parts[iPart]->getOriginVertex()->setXYZ(OrigVtx.x(),OrigVtx.y(),OrigVtx.z());
+					parts[iPart]->setId(outParticle->pdg_id());
+					parts[iPart]->setProdId(outParticle->pdg_id());
 
-				++iPart;
+					nExpectedChildren.push(parts[iPart]->nDaughters());
+
+					++iPart;
+
+				}
+				++nRecorded;
 
 			}
-			++nRecorded;
-			
+			nExpectedChildren.pop();
+			++iVtx;
 		}
-		nExpectedChildren.pop();
-		++iVtx;
-		// std::cout<<"Vtx number: "<<iVtx<<std::endl;
-		// }
 	}
+	else if (nOscVtx > 0){
 
-	delete hepMCEvent;
+		// std::cout<<"nOscVtx: "<<nOscVtx<<std::endl;
+
+		for ( auto theVertex : hepMCEvent->vertices() ) {
+
+			// std::cout<<"iVtx: "<<iVtx<<std::endl;
+
+			if ( theVertex == 0 ) {
+			    continue;
+			}
+
+			if (iVtx==0){
+
+				auto nin  = theVertex->particles_in_size();
+				auto nout = theVertex->particles_out_size();
+
+				if( nin != 1 || nout != 1){
+					std::cout << "" << std::endl;
+					std::cout << "WARNING in RapidExternalEvtGen::decay was expecting a oscillation vertex at vtx 0" << std::endl;
+					std::cout << "nin:  "<<nin << std::endl;
+					std::cout << "nout: "<<nout << std::endl;
+					std::cout << "" << std::endl;
+					return false;
+				}
+
+				GenParticlePtr inParticle = theVertex->particles_in().at(0);
+
+				int inPDGId_mthr 	= inParticle->pdg_id();
+
+				parts[0]->setProdId(inPDGId_mthr);
+
+				++iVtx;
+
+			}
+			else if (iVtx > 0){
+
+				auto nin  = theVertex->particles_in_size();
+				auto nout = theVertex->particles_out_size();
+
+				uint nChildren = nExpectedChildren.front();			
+
+				if(nin == 1 && nout == 1){
+					continue;
+				}
+				else if(nin == 1 && nout > 1){
+
+					for ( auto inParticle : theVertex->particles_in() ) {
+
+						if ( inParticle == 0 ) {
+							continue;
+						}
+						int inPDGId = inParticle->pdg_id();
+						FourMom = inParticle->momentum();
+						DecayVtx = theVertex->position();
+						flightTime = calcFlightTime( DecayVtx, FourMom);
+
+						parts[iVtx-nOscVtx]->setHasOsc(1);
+						parts[iVtx-nOscVtx]->setId(inPDGId);
+						parts[iVtx-nOscVtx]->setDecaytime(flightTime);
+						parts[iVtx]->getDecayVertex()->setXYZ(DecayVtx.x(), DecayVtx.y(), DecayVtx.x());
+
+					}
+
+					uint nRecorded(0);
+					for ( auto outParticle : theVertex->particles_out() ) {
+
+						if (nRecorded < nChildren) {
+
+							FourMom = outParticle->momentum();
+							OrigVtx = theVertex->position();
+
+							p4TLV.SetPxPyPzE(FourMom.px(),FourMom.py(),FourMom.pz(),FourMom.e());
+
+							// std::cout<<"ID:"<<outParticle->pdg_id()<<std::endl;
+							// std::cout<<"px: "<<FourMom.px()<<std::endl;
+							// std::cout<<"py: "<<FourMom.py()<<std::endl;
+							// std::cout<<"pz: "<<FourMom.pz()<<std::endl;
+							// std::cout<<""<<std::endl;
+
+							parts[iPart]->setP(p4TLV);
+
+							parts[iPart]->getOriginVertex()->setXYZ(OrigVtx.x(),OrigVtx.y(),OrigVtx.z());
+							parts[iPart]->setProdId(outParticle->pdg_id());
+							parts[iPart]->setId(outParticle->pdg_id());
+
+							nExpectedChildren.push(parts[iPart]->nDaughters());
+
+							++iPart;
+
+						}
+						++nRecorded;
+					}
+					nExpectedChildren.pop();
+				}
+				++iVtx;
+				
+			}
+
+		}
+		
+	}
+	// std::cout<<"\n"<<"End RapidSim"<<std::endl;
+	
+	delete theEvent;
+	// std::cout<<"Stop RapidSim"<<"\n"<<std::endl;
 
 	return true;
 #else
@@ -262,10 +380,15 @@ void RapidExternalEvtGen::writeDecFile(TString fname, std::vector<RapidParticle*
 	fout.open(decFileName_, std::ofstream::out);
 
 	if(usePhotos) {
-		fout << "yesFSR\n" << std::endl;
+		fout << "yesPhotos\n" << std::endl;
 	} else {
-		fout << "noFSR\n" << std::endl;
+		fout << "noPhotos\n" << std::endl;
 	}
+	// if(usePhotos) {
+	// 	fout << "yesFSR\n" << std::endl;
+	// } else {
+	// 	fout << "noFSR\n" << std::endl;
+	// }	
 	TString defString;
 	for(unsigned int iPart=0; iPart<parts.size(); ++iPart) {
 		if(parts[iPart]->evtGenDefinitions()){

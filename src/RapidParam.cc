@@ -21,7 +21,7 @@ double RapidParam::eval() {
 	double minipSigma = particles_[0]->getSigmaMinIP();
 	
 	double decaytime = particles_[0]->t();
-	int id = particles_[0]->id();
+	int id = truth_ ? particles_[0]->prodId() : particles_[0]->id();
 	bool hasOsc = particles_[0]->hasOsc();
 
 	mom_.SetPxPyPzE(0.,0.,0.,0.);
@@ -182,11 +182,11 @@ bool RapidParam::canBeSmeared() {
 		case RapidParam::OrigZ:
 			return true;
 		case RapidParam::ID:
-			return false;	
+			return true;
 		case RapidParam::decaytime:
-			return false;	
+			return false;
 		case RapidParam::hasOsc:
-			return false;								
+			return false;
 		case RapidParam::UNKNOWN:
 			return true;
 	}
@@ -266,11 +266,11 @@ bool RapidParam::canBeTrue() {
 		case RapidParam::OrigZ:
 			return true;
 		case RapidParam::ID:
-			return false;	
+			return true;	
 		case RapidParam::decaytime:
-			return false;		
+			return true;		
 		case RapidParam::hasOsc:
-			return false;									
+			return true;									
 		case RapidParam::UNKNOWN:
 			return true;
 	}
