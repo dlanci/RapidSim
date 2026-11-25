@@ -39,7 +39,8 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 
 	EvtSpinDensity* spinDensity = 0;
 	TString parentName = getEvtGenName(parts[0]->id());
-	static EvtId theId = EvtPDL::evtIdFromLundKC(parts[0]->id());
+	// not static: the parent id must be looked up on every call, a static would freeze it to the first parent decayed
+	EvtId theId = EvtPDL::evtIdFromLundKC(parts[0]->id());
 
 	int PDGId = EvtPDL::getStdHep( theId );
     if ( theId.getId() == -1 && theId.getAlias() == -1 ) {
