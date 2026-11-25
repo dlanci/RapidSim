@@ -92,7 +92,8 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 	// count the number of vertices with exactly 1 in and 1 out,
 	// these correspond to oscillation vertices
 	int nOscVtx(0);
-	int nTotVtx(0);
+	// nTotVtx only feeds the commented-out debug print below; left commented as clang -Werror rejects set-but-unused variables
+	// int nTotVtx(0);
 	for ( auto theVertexCount : hepMCEvent->vertices() ) {
 		if ( theVertexCount == 0 ) {
 		    continue;
@@ -102,7 +103,7 @@ bool RapidExternalEvtGen::decay(std::vector<RapidParticle*>& parts) {
 		if (nin == 1 && nout == 1){
 			++nOscVtx;
 		}
-		++nTotVtx;
+		// ++nTotVtx;
 	}
 	// std::cout<<"Start RapidSim"<<"\n"<<std::endl;
 	// std::cout<<""<<std::endl;
